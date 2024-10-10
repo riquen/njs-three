@@ -14,6 +14,17 @@ export const authService = {
 
       const body = response.body
       tokenService.save(body.data.access_token)
+
+      return body
+    }).then(async ({ data }) => {
+      const { refresh_token } = data
+
+      const response = await HttpClient('/api/refresh', {
+        method: 'POST',
+        body: {
+          refresh_token
+        }
+      })
     })
   },
   async getSession(context = null) {
