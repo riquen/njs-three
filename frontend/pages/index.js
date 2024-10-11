@@ -30,8 +30,8 @@ export default function HomeScreen() {
           username: values.usuario,
           password: values.senha
         }).then(() => {
-          router.push('/auth-page-static')
-          // router.push('/auth-page-ssr')
+          // router.push('/auth-page-static')
+          router.push('/auth-page-ssr')
         }).catch(() => {
           alert('Usuário ou senha inválidos')
         })
@@ -54,6 +54,10 @@ export default function HomeScreen() {
             Entrar
           </button>
         </div>
+        <p>
+          <a href="/auth-page-ssr">SSR</a>
+          <a href="/auth-page-static">Static</a>
+        </p>
       </form>
     </div>
   );

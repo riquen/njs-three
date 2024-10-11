@@ -10,7 +10,8 @@ const controllers = {
 
     nookies.set(context, REFRESH_TOKEN_NAME, req.body.refresh_token, {
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      path: '/'
     })
 
     res.json({
@@ -31,7 +32,7 @@ const controllers = {
   async regenerateTokens(req, res) {
     const context = { req, res }
     const cookies = nookies.get(context)
-    const refreshToken = cookies[REFRESH_TOKEN_NAME]
+    const refreshToken = cookies[REFRESH_TOKEN_NAME] || req.body.refresh_token
 
     const refreshResponse = await HttpClient(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/refresh`, {
       method: 'POST',
@@ -43,13 +44,14 @@ const controllers = {
     if (refreshResponse.ok) {      
       nookies.set(context, REFRESH_TOKEN_NAME, refreshResponse.body.data.refresh_token, {
         httpOnly: true,
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/'
       })
 
       tokenService.save(refreshResponse.body.data.access_token, context)
-      
-      res.json({
-        refreshResponse
+
+      res.status(200).json({
+        data: refreshResponse.body.data
       })
     } else {
       res.status(401).json({
@@ -62,8 +64,22 @@ const controllers = {
 
 const controllerBy = {
   POST: controllers.storeRefreshToken,
-  GET: controllers.regenerateTokens
   // GET: controllers.displayCookies
+  GET: controllers.regenerateTokens,
+  PUT: controllers.regenerateTokens,
+  DELETE: (req, res) => {
+    nookies.destroy({ req, res }, REFRESH_TOKEN_NAME, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/'
+    })
+
+    res.status(200).json({
+      data: {
+        message: 'Deleted successfully'
+      }
+    })
+  }
 }
 
 export default function handler(req, res) {
